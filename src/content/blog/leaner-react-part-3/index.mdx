@@ -1,0 +1,84 @@
+---
+title: "Leaner React - Part 3 - useEffect"
+description: "Effectomania"
+pubDate: "Sept 03 2024"
+heroImage: "/blog-placeholder-3.jpg"
+---
+
+import NormalFunctions from "./raw/1-normal-functions.astro";
+import UseEffectComputationChain from "./raw/1-use-effect.astro";
+import UseEffect from "./raw/2-use-effect.astro";
+import NamedHook from "./raw/2-named-hook.astro";
+
+React effects are a powerful tool. They allow you to execute a function when some dependencies change, or when the component mounts/unmounts. Originally, they are meant to [synchronize a component with an external system](https://react.dev/learn/synchronizing-with-effects). In my opinion, they are most often misused and complicating everything.
+
+Disclaimer: these are not hard rules, but rather recommendations that usually lead to cleaner code. There are exceptions that justify not following them.
+
+_TLDR_:
+
+- _Avoid useEffect for handling value changes, prefer normal functions._
+- _If you can't avoid an effect, extract it's logic into a named hook._
+
+## Avoid useEffect for handling value changes, prefer normal functions
+
+Most often, I see `useEffect` being used to handle chains of computations: _when this value changes, that should happen_ or _when this component mounts, do that_. This mental model is straight forward, easy to remember and simple to use.
+
+In my opinion, using this approach swiftly becomes problematic. I've worked with large applications that had hundreds of effects that would trigger eachother, making them feel non-deterministic. Keeping track of what happened where was insanely difficult. Try to remove an `useEffect` because it looks unnecessary? Watch the whole app collapse. On top of that, this approach made the applications slow down a lot: if a value change triggers a re-rendering of a component, after which an effect is executed, which might trigger another re-rendering of another (or the same) component and so on and so forth is just highly inefficient.
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">Effect with chain of computation</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <UseEffectComputationChain />
+  </div>
+</details>
+
+Avoid using `useEffect` for handling chains of computations. `useEffect` is meant to synchronize rendering with _external_ systems. External here means external to React. It should be used very sparesly. Prefer normal function calls.
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">Normal functions</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <NormalFunctions />
+  </div>
+</details>
+
+There is a whole article on [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect) on the React website for more details.
+
+## If you can't avoid an effect, extract it's logic into a named hook
+
+When there is a valid reason to use an effect, try to extract the logic into a named hook. This helps immensely with readability and maintainability:
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">Plain useEffect</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <UseEffect />
+  </div>
+</details>
+
+<br />
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">Named Hook</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <NamedHook />
+  </div>
+</details>
+
+## Conclusion
+
+That's it for part 3! Applying these recommendations will significantly simplify handling state management. In the [next part](/blog/leaner-react-part-3), we'll look into effects.

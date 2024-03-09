@@ -1,0 +1,30 @@
+---
+import { Code } from "astro:components";
+---
+
+<Code
+  code={`import { useState } from "react";
+
+export function Counter() {
+  const [counter, setCounter] = useState(0);
+
+  const incrementOrReset = () => {
+    if (counter > 10) {
+      setCounter(0);
+      return;
+    }
+
+    setCounter(counter + 1);
+  };
+
+  return (
+    <div>
+      <h1>Counter: {counter}</h1>
+      <button onClick={incrementOrReset}>Increment</button>
+    </div>
+  );
+}
+`}
+  lang="tsx"
+  wrap
+/>
