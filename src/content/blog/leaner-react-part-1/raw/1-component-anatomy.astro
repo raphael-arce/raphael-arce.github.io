@@ -1,0 +1,46 @@
+---
+import { Code } from "astro:components";
+---
+
+<Code
+  code={`// 1. imports
+import { useState, useEffect } from "react";
+
+// 2. static definitions
+const LIMIT = 10;
+
+type CounterProps = {
+  initialState: number;
+};
+
+// 3. component definition
+export function Counter({ initialState }: CounterProps) {
+  // 4. component variables, hoooks & functions
+  const [state, setState] = useState(initialState);
+
+  useEffect(() => {
+    if (isExceedingLimit(state)) {
+      setState(0);
+    }
+  }, [state]);
+
+  const increment = () => {
+    setState(state + 1);
+  };
+
+  // 5. component markup
+  return (
+    <div>
+      <button onClick={increment}>+1</button>
+      {state}
+    </div>
+  );
+}
+
+// 6. helper functions
+function isExceedingLimit(state: number) {
+  return state > LIMIT;
+}`}
+  lang="tsx"
+  wrap
+/>

@@ -1,0 +1,215 @@
+---
+title: "Leaner React - Part 1 - Smaller Components"
+description: "Smol pls"
+pubDate: "April 29 2024"
+heroImage: "/blog-placeholder-5.jpg"
+---
+
+import ComponentAnatomyRaw from "./raw/1-component-anatomy.astro";
+import BigComponent from "./raw/2-big-component.astro";
+import SmallComponent from "./raw/2-small-component.astro";
+import NamedProps from "./raw/3-named-props.astro";
+import ChildrenProps from "./raw/3-children-props.astro";
+import RepeatedContent from "./raw/4-repeated-content.astro";
+import MappedContent from "./raw/4-mapped-content.astro";
+import WrappedElement from "./raw/5-wrapped-element.astro";
+import UnwrappedElement from "./raw/5-unwrapped-element.astro";
+import StartEndTag from "./raw/6-start-end-tag.astro";
+import SelfClosingTag from "./raw/6-self-closing-tag.astro";
+
+For a long time, I've been wanting to write about an opinionated approach of writing leaner React/JSX. React provides a great developer experience and making it trivial to write web applications. However, it is sometimes _too_ easy, and when you don't follow somes rules to keep your code clean, it becomes a mess _very_ fast. Let's get into it!
+
+Disclaimer: these are not hard rules, but rather recommendations that usually lead to cleaner code. There are exceptions that justify not following them.
+
+_TLDR:_
+
+- _Avoid big components, prefer small components_
+- _Avoid long, confusing names, prefer short/descriptive names_
+- _Avoid smart components, prefer dumb components_
+- _Avoid Higher-Order Components (HOCs), prefer hooks, props or children_
+- _Avoid named props for content, prefer children_
+- _Avoid repetition, prefer map()_
+- _Avoid inlining/declaring functions inside JSX, prefer named functions_
+- _Avoid unnecessary wrapper elements, prefer unwrapped elements or fragments_
+- _Avoid start/end tags, prefer self-closing components (where possible)_
+
+## Anatomy of a React component
+
+A file with a React component is typically composed of following parts:
+
+1. **imports**: outside dependencies
+2. **static definitions**: constants & types
+3. **component definition**: the actual component
+4. **component variables, hooks & functions**: state, refs, effects etc.
+5. **component markup**: html-like template
+6. _(Optional)_ **helper functions**: functions that don't need to be recreated on every render
+
+This translates to:
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Component Anatomy</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <ComponentAnatomyRaw />
+  </div>
+</details>
+
+This is a pretty common structure and already quite lean. However, there are recommendations for each part in this series, but we'll start with the most important one: keep the whole file small. Small files can be understood in a few seconds, while large files take exponentially more time to understand.
+
+## Avoid big components, prefer small components
+
+The often touted reason to extract code into its own component is to make it reusable. While this is a good reason to extract them, it is not the most important one in my opinion. Extracting code into own, well-named components is much more important. It's the good ol' divide and conquer principle. Many small components are easier to _conquer_ (understand) than one big component. Let's look at these two components:
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Big component</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <BigComponent />
+  </div>
+</details>
+
+<br />
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Small Component</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <SmallComponent />
+  </div>
+</details>
+
+I think everybody would agree that the second is easier to understand. You might say "but that's cheating! You're just moving the code somewhere else!" That's exactly the point. Most of the times you don't need to see everything at once. Most often you only care about a very specific part at a time. And only seeing that part, without noise from other unrelated parts around it, reduces the cognitive load immensely.
+
+## Avoid long, confusing names, prefer short/descriptive names
+
+Naming things are hard. But it's worth the effort. A good name can make the difference between understanding a piece of code in a few seconds or minutes. A good name is descriptive and tells you what the component does. If you can't come up with a good name, it's a good indicator that the component is doing too much.
+
+## Avoid smart components, prefer dumb components
+
+Components that contain a lot of declarations, business logic, rendering logic, and markup can be labeled as "smart" components. They usually are harder to understand and maintain. Instead, prefer "dumb" components that follow the single responsibility principle: do one thing and do it well.
+
+_Note: Single-purpose & reusability often collide, but don't have to. A component can be single-purpose and still be reusable (e.g. a styled button). But as soon as a component has to fit different use-cases (=become smart), it's a bad sign._
+
+## Avoid Higher-Order Components (HOCs), prefer hooks, props or children
+
+HOCs are often confusing, increase the code complexity and are highly inefficient. Whatever problem you're trying to solve, there is most often is a better alternative to HOCs.
+
+## Avoid named props for content, prefer children
+
+When you have a small component, e.g. a button, and you want to make it reusable, you might be tempted pass its content via a named prop (e.g. `label`, `title`, `name` etc.) that accepts `string` or `ReactNode` values . While this seems like a fitting solution, in the long run it makes components more complex.
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Named Props</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <NamedProps />
+  </div>
+</details>
+
+Instead, pass the content as children (just like normal html):
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Children Props</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <ChildrenProps />
+  </div>
+</details>
+
+## Avoid repetition, prefer map()
+
+When you have a list of items that you want to render, you might write the same code over and over again:
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Repeated Content</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <RepeatedContent />
+  </div>
+</details>
+
+Prefer using `map()` to render repeating elements:
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Mapped Content</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <MappedContent />
+  </div>
+</details>
+
+## Avoid inlining/declaring functions inside JSX, prefer named functions
+
+While inline functions are convenient and okayish if they fit in one line. Beyond that, it makes the markup harder to read and understand - especially if you have nested blocks. Prefer named functions that are declared before the return statement. If you seek better performance, declare them outside of the component.
+
+## Avoid unnecessary wrapper elements, prefer unwrapped elements or fragments
+
+Have you ever seen a component that looks like this?
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Wrapped Element</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <WrappedElement />
+  </div>
+</details>
+
+Prefer less elements (and if possible, prefer fragments `<></>`):
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Unwrapped Element</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <UnwrappedElement />
+  </div>
+</details>
+
+This is also valid for libraries that wrap other libraries (which were originally written for vanilla javascript), like `react-map-gl` (mapbox/maplibre wrapper), `recharts` (d3 wrapper), etc. Avoid them if possible and prefer the original library.
+
+## Avoid start/end tags, prefer self-closing components (where possible)
+
+When a component doesn't have children, prefer self-closing components. This is also available as linting rule: [react/self-closing-comp](https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/self-closing-comp.md)
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Start and end tag</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <StartEndTag />
+  </div>
+</details>
+
+<br />
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Self-closing tag</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <SelfClosingTag />
+  </div>
+</details>
+
+## Conclusion
+
+That's it for part 1! Applying these recommendations will significantly reduce the complexity of your files / components. In the [next part](/blog/leaner-react-part-2), we'll dive into state management and keep React components as stateless as possible.

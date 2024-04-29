@@ -1,0 +1,39 @@
+---
+import { Code } from "astro:components";
+---
+
+<Code
+  code={`export function Index() {
+  return (
+    <body>
+      <header>
+        <nav>
+          <ul>
+            <li>
+              <a>Home</a>
+            </li>
+            <li>
+              <a>About</a>
+            </li>
+            <li>
+              <a>Contact</a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+      <main>
+        <article>
+          <h1>Hello World!</h1>
+          <p>This is just an example article on a website.</p>
+        </article>
+      </main>
+      <footer>
+        <p>&copy; 2021</p>
+        <a>Imprint</a>
+      </footer>
+    </body>
+  );
+}`}
+  lang="tsx"
+  wrap
+/>

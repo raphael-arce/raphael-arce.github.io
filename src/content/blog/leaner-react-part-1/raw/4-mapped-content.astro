@@ -1,0 +1,23 @@
+---
+import { Code } from "astro:components";
+---
+
+<Code
+  code={`const items = ["Home", "About", "Contact"];
+
+function Index() {
+  return (
+    <header>
+      <nav>
+        <ul>
+          {items.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </nav>
+    </header>
+  );
+}`}
+  lang="tsx"
+  wrap
+/>
