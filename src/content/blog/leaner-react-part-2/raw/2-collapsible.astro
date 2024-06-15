@@ -1,0 +1,23 @@
+---
+import { Code } from "astro:components";
+---
+
+<Code
+  code={`import { useState } from "react";
+
+export const Collapsible = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+  	<>
+  		<button onClick={() => setIsOpen(!isOpen)}>
+  		 Summary
+  		</button>
+  		{isOpen && <p>Details</p>}
+  	</>
+  );
+};
+`}
+  lang="tsx"
+  wrap
+/>

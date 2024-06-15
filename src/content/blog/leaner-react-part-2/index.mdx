@@ -1,0 +1,191 @@
+---
+title: "Leaner React - Part 2 - State Management"
+description: "No drilling"
+pubDate: "June 15 2024"
+heroImage: "/blog-placeholder-2.jpg"
+---
+
+import ControlledInput from "./raw/1-controlled-input.astro";
+import FormSubmit from "./raw/1-form-submit.astro";
+import Collapsible from "./raw/2-collapsible.astro";
+import DetailsSummary from "./raw/2-details-summary.astro";
+import JsEventListeners from "./raw/3-js-event-listeners.astro";
+import PseudoSelectors from "./raw/3-pseudo-selectors.astro";
+import JsValidation from "./raw/4-js-validation.astro";
+import NativeValidation from "./raw/4-native-validation.astro";
+import HigherOrderFunction from "./raw/5-higher-order-function.astro";
+import NormalFunction from "./raw/5-normal-function.astro";
+
+State management in React is crucial for building complex applications. It can escalate very quickly, and it's important to keep it under control. In this article, we'll explore some ways to improve managing state in React.
+
+Disclaimer: these are not hard rules, but rather recommendations that usually lead to cleaner code. There are exceptions that justify not following them.
+
+_TLDR:_
+
+- _Avoid React states, prefer alternatives_
+  - _Avoid controlled inputs, prefer using the state of the element itself_
+  - _Avoid managing state of interactive elements, prefer native states_
+  - _Avoid managing styling via JavaScript, prefer CSS_
+  - _Avoid validation via JavaScript, prefer browser-native validation_
+- _Avoid useState/useReducer/useContext for shared states, prefer extracting your state from your components_
+- _Avoid coupling rendering to state, prefer decoupled rendering/state management_
+- _Avoid higher-order functions, prefer normal functions_
+
+## The deep state
+
+When it comes to managing state in React, most often we reach for the `useState` hook. It seems easy and straight-forward. And that is true, when you have a small component and only need maybe one or two states. But the bigger the application gets, the faster it becomes a mess. State declarations need to be lifted up, states need to be prop-drilled through multiple layers of components (without them ever needing them), and the whole application becomes bloated and hard to read. Using a context improves readability, but it re-renders the whole components tree inside the provider, which hurts performance. How can we improve all this?
+
+## Avoid React states, prefer alternatives
+
+In many situations, you can avoid managing states via React states. Many interactive elements have their own state. But how can we access or utilize them?
+
+### Avoid controlled inputs, prefer using the state of the element itself
+
+Typically, if we need to get the value of an input, we would use a controlled input:
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Controlled input</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <ControlledInput />
+  </div>
+</details>
+
+While controlled inputs make sense in some cases (e.g. you need to fetch data on every key-stroke for auto-complete suggestions), most of the times they are not the best solution for your problem. They will re-render the component on every key-stroke, and the more computation has to be done, the slower and laggier your application will feel. If you need only the value of the input as part of a form submission, you can access it in the form's submit-event:
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Form submit event</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <FormSubmit />
+  </div>
+</details>
+
+### Avoid managing state of interactive elements, prefer native states
+
+Many interactive elements have their own state. Most often you don't need to re-invent the wheel for what you're trying to achieve. For example, if you need a collapsible, you can use the `<details>` element. If you need a modal/dialog you can use `<dialog>`. There is a wide range of available elements that most often will fit your needs (`<video>`, `<audio>`, `track` etc.) without having to implement state management.
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">React State Collapsible</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <Collapsible />
+  </div>
+</details>
+
+<br />
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Details/Summary</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <DetailsSummary />
+  </div>
+</details>
+
+### Avoid managing styling via JavaScript, prefer CSS
+
+Using JavaScript over CSS to style elements will strongly slow your application down. The browser can handle HTML/CSS rendering much faster than JavaScript. There are plenty of pseudo-selectors that can help you style elements based on their state: `:hover`, `:focus`, `:active`, `:disabled`, `:checked` etc. See the following examples:
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">JavaScript Event Listeners</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <JsEventListeners />
+  </div>
+</details>
+
+<br />
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">Pseudo-selectors states</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <PseudoSelectors />
+  </div>
+</details>
+
+### Avoid validation via JavaScript, prefer browser-native validation
+
+The previous recommendation can be applied for validation and styling based on validation state as well. There is a wide range of native input validation attributes that solve most of the use-cases: `required`, `minLength`/`maxLength`, `min`/`max`, `type` (e.g. `email`), `pattern` (for custom regexes) and so on (see [mdn web docs](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Form_validation) for a deep dive). For styling based on validation state, you can use the `:valid` or `:invalid` pseudo-selectors.
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">JavaScript validation</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <JsValidation />
+  </div>
+</details>
+
+<br />
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">Native validation</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <NativeValidation />
+  </div>
+</details>
+
+You might say: "But I need to validate the input on each key-stroke!". To this end you can use the `checkValidity()` function: [mdn web docs](https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/checkValidity)
+
+## Avoid useState/useReducer/useContext for shared states, prefer extracting your state from your components
+
+When you have a state that is used in multiple components, the most common recommendation is to lift it up to a common ancestor. There is no need for that. In my experience, it usually ends up in more complex code. Avoid reducers (and Redux), it is an abomination. Use plain functions, extract your states into an external store (e.g. [Zustand](https://zustand.docs.pmnd.rs/getting-started/introduction)) and _inject_ them in the components that need it, similar to dependency injections. See one of my previous articles for more details: [React State Management](/blog/react-state-management/).
+
+## Avoid coupling rendering to state, prefer decoupled rendering/state management
+
+I like to see components as templates. Simple, pure functions that use data (or not) and return html. They should not have side-effects. If you need data (from a server or a state), handle that outside of the component, and inject it. Same goes for functions that change the state. Define them outside of the component and inject them.
+
+## Avoid higher-order functions, prefer normal functions
+
+Have you ever seen a hook that takes an argument and returns a function, but internally the returned function accesses the argument via the lexical scope? For example like this:
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">Higher-order function</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <HigherOrderFunction />
+  </div>
+</details>
+
+This is a often seen pattern, that is very dangerous in my opinion and does not simplify anything. It is particularly dangerous when it is used with states: the function might be called with a stale value, making it hell to debug. Instead, prefer normal functions, that take the value as an argument and that ideally don't get recreated on every render.
+
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  {/* prettier-ignore */}
+  <summary className="collapse-title font-medium">Normal function</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <NormalFunction />
+  </div>
+</details>
+
+## Conclusion
+
+That's it for part 2! Applying these recommendations will significantly simplify handling state management. In the [next part](/blog/leaner-react-part-3), we'll look into effects.

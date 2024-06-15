@@ -1,0 +1,62 @@
+---
+import { Code } from "astro:components";
+---
+
+<Code
+  code={`import { FormEvent, useState } from "react";
+
+export default function Form() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const isValid = () => {
+    const _errors: Record<string, string> = {};
+    if (!email) {
+      _errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      _errors.email = "Invalid email format";
+    }
+
+    if (!password) {
+      _errors.password = "Password is required";
+    } else if (password.length < 6) {
+      _errors.password = "Password must be at least 6 characters long";
+    }
+
+      setErrors(errors);
+      return Object.keys(_errors).length === 0;
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    if (isValid()) {
+      // submit ...
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>Email</label>
+      <input
+        type="text"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      {errors.email && <p>{errors.email}</p>}
+
+      <label>Password</label>
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      {errors.password && <p>{errors.password}</p>}
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+`}
+  lang="tsx"
+  wrap
+/>

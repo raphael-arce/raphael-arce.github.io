@@ -1,0 +1,31 @@
+---
+import { Code } from "astro:components";
+---
+
+<Code
+  code={`import { useState } from "react";
+
+export const StyledButton = () => {
+  const [hasHover, setHasHover] = useState(false);
+  const [hasFocus, setHasFocus] = useState(false);
+
+  return (
+    <button
+      onMouseEnter={() => setHasHover(true)}
+      onMouseLeave={() => setHasHover(false)}
+      onFocus={() => setHasFocus(true)}
+      onBlur={() => setHasFocus(false)}
+      className={\`
+      \${hasHover ? "bg-blue-500" : "bg-transparent"}
+      \${hasFocus ? "border-blue-500" : "border-black"}
+      \${hasHover ? "text-white" : "text-black"}
+      \`}
+    >
+      Action
+    </button>
+  );
+};
+`}
+  lang="tsx"
+  wrap
+/>

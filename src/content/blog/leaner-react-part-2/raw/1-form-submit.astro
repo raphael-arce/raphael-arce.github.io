@@ -1,0 +1,23 @@
+---
+import { Code } from "astro:components";
+---
+
+<Code
+  code={`import type { FormEvent } from "react";
+
+export const Form = () => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  	const value = event.currentTarget["user-input"].value;
+  	doSomethingWith(value);
+  };
+
+  return (
+  	<form onSubmit={handleSubmit}>
+  		<input name="user-input" type="text" />;
+  	</form>
+  );
+};
+`}
+  lang="tsx"
+  wrap
+/>

@@ -1,0 +1,26 @@
+---
+import { Code } from "astro:components";
+---
+
+<Code
+  code={`import { useState, ChangeEvent } from "react";
+
+export const TextInput = () => {
+  const [value, setValue] = useState("");
+
+  const handleInput = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value;
+
+  	setValue(value);
+
+  	doSomethingWith(value);
+  };
+
+  return (
+  	<input type="text" value={value} onInput={handleInput} />;
+  );
+};
+`}
+  lang="tsx"
+  wrap
+/>
