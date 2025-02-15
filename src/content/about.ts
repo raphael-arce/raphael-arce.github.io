@@ -8,6 +8,13 @@ export const experiences = [
       "Open source prototypes/products I have worked on during my time at Technologiestiftung Berlin: ",
     products: [
       {
+        previewLink: "https://fairgnuegen.berlin.de/",
+        linkLabel: "Fairgnügen",
+        description:
+          ",  a platform to find free or discounted cultural, sports, educational, and leisure activities for Berliners who receive social benefits.",
+        githubLink: "https://github.com/technologiestiftung/fairgnuegen",
+      },
+      {
         previewLink: "https://baergpt.citylab-berlin.org/",
         linkLabel: "BärGPT",
         description:
