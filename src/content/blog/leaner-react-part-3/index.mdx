@@ -17,7 +17,7 @@ Disclaimer: these are not hard rules, but rather recommendations that usually le
 _TLDR_:
 
 - _Avoid useEffect for handling value changes, prefer normal functions._
-- _If you can't avoid an effect, extract it's logic into a named hook._
+- _If you can't avoid an effect, extract it into a named hook._
 
 ## Avoid useEffect for handling value changes, prefer normal functions
 
@@ -51,7 +51,7 @@ Avoid using `useEffect` for handling chains of computations. `useEffect` is mean
 
 There is a whole article on [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect) on the React website for more details.
 
-## If you can't avoid an effect, extract it's logic into a named hook
+## If you can't avoid an effect, extract it into a named hook
 
 When there is a valid reason to use an effect, try to extract the logic into a named hook. This helps immensely with readability and maintainability:
 
