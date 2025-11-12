@@ -5,26 +5,26 @@ pubDate: "Nov 10 2025"
 heroImage: "/blog-placeholder-2.jpg"
 ---
 
-_TLDR: Parallelize and cache as much as you can._
+_TLDR: The following optimizations allowed made our e2e tests workflow 10x faster. Optimizations included faster tests, more parallelization and more caching._
 
 <hr />
 
-During the development of [BärGPT](https://www.baergpt.berlin), an AI Chatbot for the Public Administration of Berlin, we reached a point where our GitHub e2e test workflow would take over 1 hour to complete. At that point I was fed up and decided to look into it. On top of that, the tests were often flaky, which made it even harder to work with. I was thinking, there surely must be room for improvement? _Oh boy_.
+During the development of [BärGPT](https://www.baergpt.berlin), we reached a point where our GitHub e2e test workflow would take over 1 hour to complete. On top of that, the tests were often flaky, which made it even harder to work with. At that point I was fed up and decided to look into it. I was thinking, there surely must be room for improvement? _Oh boy_.
 
-After investigating, I discovered that there were two main problems:
+After investigating, I discovered that there were two main bottlenecks:
 
-1. The tests were inefficient, and
-2. The workflow was inefficient.
+1. **Inefficient tests**: UI-based login/registration fixtures were very slow.
+2. **Inefficient workflow**: sequential and uncached steps wasted time.
 
-Here's an example todo app that has a similar setup as BärGPT (but simplified) to illustrate how everything works: [https://github.com/raphael-arce/fast-gh-actions](https://github.com/raphael-arce/fast-gh-actions)
+Here's an example todo app that has a similar stack as BärGPT (but simplified) to illustrate how everything works: [https://github.com/raphael-arce/fast-gh-actions](https://github.com/raphael-arce/fast-gh-actions)
 
-Setup:
+Stack:
 
 - Todo App (React/Vite)
 - Supabase as a DB/Auth provider
 - Playwright as e2e testing framework
 
-Here is a screenshot of a test run before any optimizations, it took **10 minutes**. It includes 17 e2e tests, which are run against 3 browsers (Chromium, Firefox and Safari), making it a total of 51 tests. All the setup steps together took ~5 minutes and 30 seconds and running the tests took ~4 minutes and 30 seconds.
+Below you'll find a screenshot of a workflow run before any optimizations, it took **10 minutes**. It includes 17 e2e tests, which are run against 3 browsers (Chromium, Firefox and Safari), making it a total of 51 tests. All the job setup steps (installing dependencies, Supabase and Playwright browsers) together took ~5 minutes and 30 seconds and running the tests took ~4 minutes and 30 seconds.
 
 <figure className="mx-auto">
   <div className="flex flex-col items-center">
@@ -33,12 +33,14 @@ Here is a screenshot of a test run before any optimizations, it took **10 minute
       alt="Slow test run screenshot showing each step: Installing dependencies took 5 minutes 30 seconds and running the tests took 4 minutes 30 seconds"
     />
   </div>
-  <figcaption className="text-center">Slow test run</figcaption>
+  <figcaption className="text-center">
+    Figure 1: Slow workflow before optimization
+  </figcaption>
 </figure>
 
-## Why were the tests inefficient?
+## Mocking for Speed: Bypassing the UI
 
-Initially we used test fixtures that would register and login users via the UI, just like a real user would do. Most tests needed this logged-in state before actually starting to test a particular feature. This was extremely slow: On a Mac Mini M4, it would take **~3.5 seconds** before almost every test. In the GitHub Actions it was even slower.
+Initially we used test fixtures that would register and login users via the UI, just like a real user would do. Most tests needed this logged-in state before actually starting to test a particular feature. This was extremely slow: On a Mac Mini M4, both fixtures would take **~3.5 seconds** and would be needed for almost every test. In the GitHub Actions it was even slower.
 
 In the example todo app, it would look like this:
 
@@ -57,13 +59,13 @@ In the example todo app, it would look like this:
   </figcaption>
 </figure>
 
-I realized that apart from the registration test and the login test, other tests don‘t need to register / login via the UI. You can just register a user via the supabase library (as admin), then log in, which will return a session as JWT. You can then inject that JWT into the browser‘s local storage. In case you're curious how it works see these fixtures: [register fixture](https://github.com/raphael-arce/fast-gh-actions/blob/main/tests/fixtures/fast/with-registered-user.ts) and [login fixture](https://github.com/raphael-arce/fast-gh-actions/blob/main/tests/fixtures/fast/with-logged-in-user.ts). When the test runs, the app will read that local storage to check if there is an active session (just how it would do it in reality). If there is one, you‘ll be logged in the same way as if you would do it via the UI.
+I realized that apart from the registration test and the login test, other tests don‘t need to register / login via the UI. You can just register a user via the supabase library (as admin), then log in, which will return a session as JWT. You can then inject that JWT into the browser‘s local storage. When the test runs, the app will read that local storage to check if there is an active session (just how it would do it in reality). If there is one, you‘ll be logged in the same way as if you would do it via the UI. In case you're curious how it works here are the fixtures: [register fixture](https://github.com/raphael-arce/fast-gh-actions/blob/main/tests/fixtures/fast/with-registered-user.ts) and [login fixture](https://github.com/raphael-arce/fast-gh-actions/blob/main/tests/fixtures/fast/with-logged-in-user.ts).
 
-This brings down the setup before each test from ~3.5 seconds to **~0.3 seconds** (!).
+This brings down the fixtures duration from ~3.5 seconds to **~0.3 seconds** (!).
 
-On a side note: For BärGPT, we also had fixtures that would upload documents to a user's account to test features that rely on uploaded documents. This was slow because, for every upload, it would make the full document upload and processing every time: upload the file, extract the content, generate chunks, generate embeddings, etc. It was also error-prone, some 3rd party services would occasionally fail. We'd use test retries to avoid these errors, but this increased the time tests took even more. Similar to the registration and login fixtures, I thought it's good enough to just mock the document upload and processing by just using fixed values, as long it's for tests that don't test the document upload/processing itself, but rather features based on already uploaded documents. This reduced BärGPT e2e test workflow time from over 1 hour to ~20 minutes.
+On a side note: For BärGPT, we also had fixtures that would upload documents to a user's account to test features that rely on uploaded documents. This was slow because, for every upload, it would make the full document upload and processing every time: upload the file, extract the content, generate chunks, generate embeddings, etc. It was also error-prone, some 3rd party services would occasionally fail. We'd use test retries to avoid these errors, but this increased the time tests took even more. Similar to the registration and login fixtures, I thought it's good enough to just mock the document upload and processing by just using fixed values, as long it's for tests that don't test the document upload/processing itself, but rather features based on already uploaded documents. This reduced BärGPT e2e test workflow time from over 1 hour to ~20 minutes. Avoid retries if you can, prefer fixing flaky tests.
 
-## Why was the workflow inefficient?
+## Parallelization: The Key to Faster Workflows
 
 In our Todo App, every run would proceed as following:
 
@@ -78,19 +80,19 @@ One thing you can optimize is to cache as much as possible. You can cache npm de
 
 The installations of Playwright browsers and Supabase were annoyingly slow. Playwright does [not recommend to cache the browsers](https://playwright.dev/docs/ci#caching-browsers), and caching Supabase does not bring much, as restoring it from a cache takes as long as downloading it from scratch.
 
-However! There is a way to speed up things: parallelization. You don't need to run each step sequentially in your workflow. Instead, you can start it and run it in the background. For the installations of Playwright browsers and Supabase, they're mainly network operations and not CPU intensive, so running them in parallel in the background saves a lot of time. Important: if you do this, you'll need an extra step to make sure the installations are done before the tests start.
+However! There is another way to speed up things: parallelization. You don't need to run each step sequentially in your workflow. Instead, you can start it and run it in the background. For the installations of Playwright browsers and Supabase, they're mainly network operations and not CPU intensive, so running them in parallel in the background saves a lot of time. Important: if you do this, you'll need an extra step to make sure the installations are done before the tests start.
 
 Another small optimization for installing Supabase is to use the `—exclude` flag. That way, you can exclude services that are not needed for your tests.
 
-Once you realize that you can run things in parallel, you start thinking if there is more you can parallelize. Could you run e2e tests in parallel inside the same workflow, e.g. with different workers? Unfortunately,Playwright does [not recommend it](https://playwright.dev/docs/ci#workers): stability and reproducibility should be prioritized. Using more workers in CI environments might lead to performance issues.
+Once you realize that you can run things in parallel, you start thinking if there is more you can parallelize. Could we run e2e tests in parallel inside the same workflow, e.g. with multiple workers? Unfortunately, Playwright does [not recommend it for CI environments](https://playwright.dev/docs/ci#workers): stability and reproducibility should be prioritized. Using more workers in CI environments might lead to performance issues and make tests flaky.
 
 After further research, I stumbled upon GitHub Actions' [matrix feature](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations): you can run create variations of a job in your workflow.
 
-If we apply this to our e2e tests workflow, we can split our tests into job variations of the same workflow. Example: we add a matrix to our workflow that uses browsers names ('chromium', 'firefox', 'webkit') as job variation, and execute our e2e tests on this browser. This way, we can run our tests in parallel. You could add even more parallelism with [sharding](https://playwright.dev/docs/test-sharding#github-actions-example).
+By adding a matrix to our e2e tests workflow, we can split up the tests over multiple jobs, and run them in parallel. For example: we add a matrix to our workflow that uses browsers names ('chromium', 'firefox', 'webkit') as job variation, and execute our e2e tests on this browser with the `--project <browserName>` flag. You could add even more parallelism with [sharding](https://playwright.dev/docs/test-sharding#github-actions-example).
 
-The disadvantage with this approach is that you'll run the setup (installing dependencies, supabase, playwright browsers etc.) for each job variation (e.g. browser). Running too many job variations at the same time will significantly increase the total billed minutes. Finding a balance is key.
+The disadvantage with this approach is that you'll run the job setup (installing dependencies, supabase, playwright browsers etc.) for each job variation. Running too many job variations at the same time will significantly increase the total billed minutes. Finding a balance is key.
 
-In our case, I think the sweet spot is just to use browsers as job variations. This also allows you to only install the browser currently needed for the job variation, instead of all browsers, which saves some time. Another perk you get is that you can now see which browser is slower or which you are currently waiting for (spoiler: it's usually Safari).
+In our case, I think the sweet spot is to use browsers as job variations. This also allows you to only install the browser currently needed for the job variation, instead of all browsers, which saves some time. Another perk you get is that you can now see which browser is slower or which you are currently waiting for (spoiler: it's usually Safari).
 
 By applying all these optimizations, we can bring down the workflow time from **10 minutes** to **3 minutes and 49 seconds**. Here is a screenshot of the chromium workflow with timings:
 
@@ -98,27 +100,27 @@ By applying all these optimizations, we can bring down the workflow time from **
   <div className="flex flex-col items-center">
     <img
       src="/test-run-faster.png"
-      alt="Slow test run screenshot showing each step: Installing dependencies took 5 minutes and 30 seconds and running the tests took 4 minutes and 30 seconds"
+      alt="Faster workflow utilizing all previously mentionned optimizations. The workflow duration was 3 minutes and 49 seconds."
     />
   </div>
-  <figcaption className="text-center">Faster test run</figcaption>
+  <figcaption className="text-center">Figure 2: Faster Workflow</figcaption>
 </figure>
 
-Notice how we went from 5 minutes and 30 seconds to **~3 minutes** for the setup. The tests themselves went down from 4 minutes and 30 seconds to **~30 seconds** (!).
+Notice how we went from 5 minutes and 30 seconds to **~3 minutes** for the job setup. The tests themselves went down from 4 minutes and 30 seconds to **~30 seconds** (!).
 
-Note: keep in mind this was just the workflow for chromium. Firefox took ~3 minutes and Webkit (Safari) took 3 minutes and 47 seconds. But since they were running in parallel, they're done at almost the time. Also important to note, is that the total billed time is higher than before: pre-optimization 10 minutes, post-optimizations 10 minutes and 18 seconds.
+Note: keep in mind this was just the workflow for chromium. Firefox took ~3 minutes and Webkit (Safari) took 3 minutes and 47 seconds. But since they were running in parallel, they're done at almost the same time. Also important to note, is that the total billed time is higher than before: pre-optimization 10 minutes, post-optimizations 10 minutes and 18 seconds.
 
 When we applied these optimizations for BärGPT, we got to down from over 1 hour runs to max 7 minutes per workflow. That was a great relief!
 
 ## Bonus - Pushing limits
 
-You could try out using [bun](https://bun.com). I tried it for the example todo app, but it was not faster. I tried it in another project with much more and bigger dependencies and the raw `bun install` was faster than restoring dependencies from a cache. Very impressive.
+You could try out using [bun](https://bun.com). I tried it for the example todo app, but it did not make the workflow any faster. I tried it in another project with much more and bigger dependencies and the raw `bun install` was faster than restoring dependencies from a cache. Very impressive.
 
-You could use a bigger/faster machine. I was often reading about self-hosted runners and feared that would be too much of a hassle to set this up. But after trying it out, I saw how dead simple it is. In addition, having to install a lot of dependencies was bothering me. I was thinking why can't we just pre-install everything we need on a VM/Docker Image and spin that up?
+You could use a bigger/faster machine. I was often reading about self-hosted runners and feared that would be too much of a hassle to set this up. But after trying it out, I saw how dead simple it was. In addition, the job setup duration was still bothering me. I was thinking why can't we just pre-install everything we need on a VM/Docker Image and spin that up?
 
 Then it hit me: what if I just pre-install everything the workflow needs on a self-hosted runner and avoid a re-installation everytime we run tests? After all, the installation of dependencies (dependencies, supabase, playwright browsers) is what takes most of the time for each run.
 
-After experimenting a bit, it worked, but you need a bit of tweaking. Running the e2e tests in a matrix with different job variations will need an own machine for each variation. If you have only one self-hosted runner, the runs will be sequential again and no longer in parallel. But if you have multiple self-hosted runners, it greatly reduces the run time again.
+After experimenting a bit, it worked, but you need a bit of tweaking. Running the e2e tests in a matrix with different job variations will need an own machine for each job variation. If you have only one self-hosted runner, the runs will be sequential again and no longer in parallel. But if you have multiple self-hosted runners, it greatly reduces the run time.
 
 I was thinking, well if I run it on a bigger/faster machine, I don't need to limit myself to the playwright recommendation of 1 worker in CI environments. I can just remove the job matrix and increase the amount of workers.
 
@@ -134,11 +136,11 @@ If we apply these tweaks to the todo app workflow (using a mac mini m4 for the s
   <figcaption className="text-center">Fastest test run</figcaption>
 </figure>
 
-Setup/Teardown just takes a few seconds, while the tests run in **17 seconds** thanks to multiple workers. Overall, it's very pleasing to see.
+Job setup/teardown just took a few seconds and the tests run in **17 seconds** thanks to multiple workers. Overall, it's very pleasing to see.
 
-Unfortunately, there are drawbacks to this approach. Not installing everything from scratch every time might cause reproducibility issues, e.g. when you have a version mismatch that goes unnoticed.
-Another is that you might not have a powerful machine that you can afford to leave idle between runs (which probably will be most of the time). We decided to not use self-hosted runners for now for BärGPT because of these drawbacks.
+Unfortunately, there are drawbacks to this approach. Not installing everything from scratch every time might cause reproducibility issues, e.g. when you have an unnoticed version mismatch and your CI environment suddenly behaves differently than it should.
+Another drawback is that you might not have a powerful machine that you can afford to leave idle between runs (which probably will be most of the time). We decided to not use self-hosted runners for now for BärGPT because of these drawbacks.
 
 ## Conclusion
 
-In my opinion, since every project is different, you should weigh the benefits against the potential drawbacks before deciding whether or which optimizations to adopt. But trying (and succeeding!) to optimize can be very satisfying. Try them out for your own workflow!
+In my opinion, since every project is different, you should weigh the benefits against the potential drawbacks before deciding whether or which optimizations to adopt. But trying (and succeeding!) to optimize can be very satisfying. Try them out for your own workflow! 🚀
