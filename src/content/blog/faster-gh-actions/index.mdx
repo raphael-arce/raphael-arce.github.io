@@ -59,11 +59,11 @@ In the example todo app, it would look like this:
   </figcaption>
 </figure>
 
-I realized that apart from the registration test and the login test, other tests don‘t need to register / login via the UI. You can just register a user via the supabase library (as admin), then log in, which will return a session as JWT. You can then inject that JWT into the browser‘s local storage. When the test runs, the app will read that local storage to check if there is an active session (just how it would do it in reality). If there is one, you‘ll be logged in the same way as if you would do it via the UI. In case you're curious how it works here are the fixtures: [register fixture](https://github.com/raphael-arce/fast-gh-actions/blob/main/tests/fixtures/fast/with-registered-user.ts) and [login fixture](https://github.com/raphael-arce/fast-gh-actions/blob/main/tests/fixtures/fast/with-logged-in-user.ts).
+I realized that apart from the registration test and the login test, other tests don‘t need to register / login via the UI. You can register a user via the `supabase-js` library (as admin), but also log in via the `supabase-js` library, which will return a session token (as JWT). You can then inject that JWT into test page's local storage. When the test runs, the app will read that local storage to check if there is an active session (exactly how it would do it in reality). If there is one, you‘ll be logged in the same way as if you would do it via the UI. In case you're curious how it works here are the fixtures: [register fixture](https://github.com/raphael-arce/fast-gh-actions/blob/main/tests/fixtures/fast/with-registered-user.ts) and [login fixture](https://github.com/raphael-arce/fast-gh-actions/blob/main/tests/fixtures/fast/with-logged-in-user.ts).
 
 This brings down the fixtures duration from ~3.5 seconds to **~0.3 seconds** (!).
 
-On a side note: For BärGPT, we also had fixtures that would upload documents to a user's account to test features that rely on uploaded documents. This was slow because, for every upload, it would make the full document upload and processing every time: upload the file, extract the content, generate chunks, generate embeddings, etc. It was also error-prone, some 3rd party services would occasionally fail. We'd use test retries to avoid these errors, but this increased the time tests took even more. Similar to the registration and login fixtures, I thought it's good enough to just mock the document upload and processing by just using fixed values, as long it's for tests that don't test the document upload/processing itself, but rather features based on already uploaded documents. This reduced BärGPT e2e test workflow time from over 1 hour to ~20 minutes. Avoid retries if you can, prefer fixing flaky tests.
+On a side note: For BärGPT, we also had fixtures that would upload documents to a user's account to test features that rely on uploaded documents. This was slow because, for every upload, it would make the full document upload and processing every time: upload the file, extract the content, generate chunks, generate embeddings, etc. It was also error-prone, some 3rd party services would occasionally fail. We'd use test retries to avoid these errors, but this increased the time tests took even more. Similar to the registration and login fixtures, I thought it's good enough to merely mock the document upload and processing by using fixed values, as long it's for tests that don't test the document upload/processing itself, but rather features based on already uploaded documents. This reduced BärGPT e2e test workflow time from over 1 hour to ~20 minutes. Avoid retries if you can, prefer fixing flaky tests.
 
 ## Parallelization: The Key to Faster Workflows
 
@@ -116,13 +116,13 @@ When we applied these optimizations for BärGPT, we got to down from over 1 hour
 
 You could try out using [bun](https://bun.com). I tried it for the example todo app, but it did not make the workflow any faster. I tried it in another project with much more and bigger dependencies and the raw `bun install` was faster than restoring dependencies from a cache. Very impressive.
 
-You could use a bigger/faster machine. I was often reading about self-hosted runners and feared that would be too much of a hassle to set this up. But after trying it out, I saw how dead simple it was. In addition, the job setup duration was still bothering me. I was thinking why can't we just pre-install everything we need on a VM/Docker Image and spin that up?
+You could use a bigger/faster machine. I was often reading about self-hosted runners and feared that would be too much of a hassle to set this up. But after trying it out, I saw how dead simple it was. In addition, the job setup duration was still bothering me. I was thinking why can't we simply pre-install everything we need on a VM/Docker Image and spin that up?
 
-Then it hit me: what if I just pre-install everything the workflow needs on a self-hosted runner and avoid a re-installation everytime we run tests? After all, the installation of dependencies (dependencies, supabase, playwright browsers) is what takes most of the time for each run.
+Then it hit me: what if I pre-install everything the workflow needs on a self-hosted runner and avoid a re-installation everytime we run tests? After all, the installation of dependencies (dependencies, supabase, playwright browsers) is what takes most of the time for each run.
 
 After experimenting a bit, it worked, but you need a bit of tweaking. Running the e2e tests in a matrix with different job variations will need an own machine for each job variation. If you have only one self-hosted runner, the runs will be sequential again and no longer in parallel. But if you have multiple self-hosted runners, it greatly reduces the run time.
 
-I was thinking, well if I run it on a bigger/faster machine, I don't need to limit myself to the playwright recommendation of 1 worker in CI environments. I can just remove the job matrix and increase the amount of workers.
+I was thinking, well if I run it on a bigger/faster machine, I don't need to limit myself to the playwright recommendation of 1 worker in CI environments. I can remove the job matrix and increase the amount of workers.
 
 If we apply these tweaks to the todo app workflow (using a mac mini m4 for the self-hosted runner), and obviously it then was blazingly fast: the whole workflow would run in **41 seconds** (!), here is a screenshot of the results:
 
@@ -136,7 +136,7 @@ If we apply these tweaks to the todo app workflow (using a mac mini m4 for the s
   <figcaption className="text-center">Fastest test run</figcaption>
 </figure>
 
-Job setup/teardown just took a few seconds and the tests run in **17 seconds** thanks to multiple workers. Overall, it's very pleasing to see.
+Job setup/teardown only took a few seconds and the tests run in **17 seconds** thanks to multiple workers. Overall, it's very pleasing to see.
 
 Unfortunately, there are drawbacks to this approach. Not installing everything from scratch every time might cause reproducibility issues, e.g. when you have an unnoticed version mismatch and your CI environment suddenly behaves differently than it should.
 Another drawback is that you might not have a powerful machine that you can afford to leave idle between runs (which probably will be most of the time). We decided to not use self-hosted runners for now for BärGPT because of these drawbacks.
