@@ -84,7 +84,7 @@ The installations of Playwright browsers and Supabase were annoyingly slow. Play
 
 However! There is another way to speed up things: parallelization. You don't need to run each step sequentially in your workflow. Instead, you can start it and run it in the background. For the installations of Playwright browsers and Supabase, they're mainly network operations and not CPU intensive, so running them in parallel in the background saves a lot of time. Important: if you do this, you'll need an extra step to make sure the installations are done before the tests start.
 
-Another small optimization for installing Supabase is to use the `—exclude` flag. That way, you can exclude services that are not needed for your tests.
+Another small optimization for installing Supabase is to use the `--exclude` flag. That way, you can exclude services that are not needed for your tests.
 
 Once you realize that you can run things in parallel, you start thinking if there is more you can parallelize. Could we run e2e tests in parallel inside the same workflow, e.g. with multiple workers? Unfortunately, Playwright does [not recommend it for CI environments](https://playwright.dev/docs/ci#workers): stability and reproducibility should be prioritized. Using more workers in CI environments might lead to performance issues and make tests flaky.
 
