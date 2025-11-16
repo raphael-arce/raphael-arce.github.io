@@ -116,7 +116,7 @@ When we applied these optimizations for BärGPT, we got to down from over 1 hour
 
 You could try out using [bun](https://bun.com). I tried it for the example todo app, but it did not make the workflow any faster. I tried it in another project with much more and bigger dependencies and the raw `bun install` was faster than restoring dependencies from a cache. Very impressive.
 
-You could use a bigger/faster machine. I was often reading about self-hosted runners and feared that would be too much of a hassle to set this up. But after trying it out, I saw how dead simple it was. In addition, the job setup duration was still bothering me. I was thinking why can't we simply pre-install everything we need on a VM/Docker Image and spin that up?
+You could use a bigger/faster machine. I was often reading about [self-hosted runners](https://docs.github.com/en/actions/concepts/runners/self-hosted-runners) and feared that would be too much of a hassle to set this up. But after trying it out, I saw how dead simple it was. In addition, the job setup duration was still bothering me. I was thinking why can't we simply pre-install everything we need on a VM/Docker Image and spin that up?
 
 Then it hit me: what if I pre-install everything the workflow needs on a self-hosted runner and avoid a re-installation everytime we run tests? After all, the installation of dependencies (dependencies, supabase, playwright browsers) is what takes most of the time for each run.
 
