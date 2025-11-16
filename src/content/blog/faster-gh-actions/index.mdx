@@ -63,8 +63,6 @@ I realized that apart from the registration test and the login test, other tests
 
 This brings down the fixtures duration from ~3.5 seconds to **~0.3 seconds** (!).
 
-On a side note: For BärGPT, we also had fixtures that would upload documents to a user's account to test features that rely on uploaded documents. This was slow because, for every upload, it would make the full document upload and processing every time: upload the file, extract the content, generate chunks, generate embeddings, etc. It was also error-prone, some 3rd party services would occasionally fail. We'd use test retries to avoid these errors, but this increased the time tests took even more. Similar to the registration and login fixtures, I thought it's good enough to merely mock the document upload and processing by using fixed values, as long it's for tests that don't test the document upload/processing itself, but rather features based on already uploaded documents. This reduced BärGPT e2e test workflow time from over 1 hour to ~20 minutes. I've grown the opinion that experience is that retries should be avoided. They make you ignore issues that should be addrsssed.
-
 **Note:** For BärGPT, we also used fixtures to upload documents for testing features dependent on uploaded files. However, this approach was slow. Each upload triggered the full process: file upload, content extraction, chunking, and embeddings generation. It was also unreliable, as third-party services occasionally failed, which we tried to avoid with test retries that further delayed tests (IMO, retries should be avoided, but that's a topic for another time). For tests not focused on the upload/processing itself, I replaced these fixtures with mocks using fixed values. This change cut BärGPT’s end-to-end test time from over an hour to about 20 minutes.
 
 ## Parallelization: The Key to Faster Workflows
@@ -88,7 +86,7 @@ Another small optimization for installing Supabase is to use the `--exclude` fla
 
 Once you realize that you can run things in parallel, you start thinking if there is more you can parallelize. Could we run e2e tests in parallel inside the same workflow, e.g. with multiple workers? Unfortunately, Playwright does [not recommend it for CI environments](https://playwright.dev/docs/ci#workers): stability and reproducibility should be prioritized. Using more workers in CI environments might lead to performance issues and make tests flaky.
 
-After further research, I stumbled upon GitHub Actions' [matrix feature](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations): you can run create variations of a job in your workflow.
+After further research, I stumbled upon GitHub Actions' [matrix feature](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations): you can create variations of a job in your workflow.
 
 By adding a matrix to our e2e tests workflow, we can split up the tests over multiple jobs, and run them in parallel. For example: we add a matrix to our workflow that uses browsers names ('chromium', 'firefox', 'webkit') as job variation, and execute our e2e tests on this browser with the `--project <browserName>` flag. You could add even more parallelism with [sharding](https://playwright.dev/docs/test-sharding#github-actions-example).
 
