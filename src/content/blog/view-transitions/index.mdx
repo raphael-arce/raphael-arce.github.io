@@ -1,0 +1,26 @@
+---
+title: "View Transitions"
+description: "Fancy"
+pubDate: "Nov 27 2025"
+heroImage: "/blog-placeholder-4.jpg"
+---
+
+I just learned that you can activate [view transitions](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API) in multi-page applications using only this in your stylesheet:
+
+```
+@view-transition {
+  navigation: auto;
+}
+```
+
+And if you want to make sure that your view transitions are accessible, you can wrap it in a `prefers-reduced-motion` media query:
+
+```
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+```
+
+Note: it is [not supported by firefox yet](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API#css.at-rules.view-transition), but it works in chromium- and webkit-based browsers.
