@@ -8,25 +8,10 @@ export const experiences = [
       "Open source prototypes/products I have worked on during my time at Technologiestiftung Berlin: ",
     products: [
       {
-        previewLink: "https://fairgnuegen.berlin.de/",
-        linkLabel: "Fairgnügen",
-        description:
-          ",  a platform to find free or discounted cultural, sports, educational, and leisure activities for Berliners who receive social benefits.",
-        githubLink: "https://github.com/technologiestiftung/fairgnuegen",
-      },
-      {
-        previewLink: "https://baergpt.citylab-berlin.org/",
+        previewLink: "https://baergpt.berlin/",
         linkLabel: "BärGPT",
-        description:
-          ",  a platform that enables public servants to explore and test AI applications at scale in administrative work.",
-        githubLink: "https://github.com/technologiestiftung/ber-gpt-frontend",
-      },
-      {
-        previewLink: "https://anmelde-check.vercel.app/",
-        linkLabel: "Anmelde-Check",
-        description:
-          ", a wizard that assists people in figuring out which documents they need to register at a Bürgeramt in Berlin.",
-        githubLink: "https://github.com/technologiestiftung/anmelde-check",
+        description: ",  AI Assistant for Berlin's Public Administration.",
+        githubLink: "https://github.com/technologiestiftung/baergpt",
       },
       {
         previewLink: "https://www.parla.berlin/",
@@ -36,11 +21,32 @@ export const experiences = [
         githubLink: "https://github.com/technologiestiftung/parla-frontend",
       },
       {
-        previewLink: "https://giessdenkiez.de/",
+        previewLink: "https://www.giessdenkiez.de/map?lang=en",
         linkLabel: "Giess den Kiez",
         description:
           ", a web app that enables coordinated citizen participation in the irrigation of urban trees.",
         githubLink: "https://github.com/technologiestiftung/giessdenkiez-de",
+      },
+      {
+        previewLink: "https://fairgnuegen.berlin.de/",
+        linkLabel: "Fairgnügen",
+        description:
+          ",  a platform to find free or discounted cultural, sports, educational, and leisure activities for Berliners who receive social benefits.",
+        githubLink: "https://github.com/technologiestiftung/fairgnuegen",
+      },
+      {
+        previewLink: "https://www.klimadashboard-xhain.de/en",
+        linkLabel: "Klimadashboard Xhain",
+        description:
+          ", a dashboard that provides an insight into current climate data and climate measures in the Berlin district Friedrichshain-Kreuzberg.",
+        githubLink: "https://github.com/technologiestiftung/giessdenkiez-de",
+      },
+      {
+        previewLink: "https://anmelde-check.vercel.app/",
+        linkLabel: "Anmelde-Check",
+        description:
+          ", a wizard that assists people in figuring out which documents they need to register at a Bürgeramt in Berlin.",
+        githubLink: "https://github.com/technologiestiftung/anmelde-check",
       },
       {
         previewLink: "https://future-greetings.vercel.app/",
@@ -53,7 +59,7 @@ export const experiences = [
       {
         previewLink: "https://stakeholder-radar.vercel.app/",
         linkLabel: "Stakeholder Radar",
-        description: `, a tool that visualizes the stakeholders of a topic or project across multiple dimensions. For example, it has been used to create a  
+        description: `, a tool that visualizes the stakeholders of a topic or project across multiple dimensions. For example, it has been used to create a
                       <a href='https://github.com/technologiestiftung/post-covid-stakeholder-map' target="_blank" class="text-blue-600 underline visited:text-purple-500">Post-COVID Stakeholder Map</a> and a
                        <a href='https://github.com/technologiestiftung/post-covid-data-map' target="_blank" class="text-blue-600 underline visited:text-purple-500">Post-COVID Data Map</a>.`,
         githubLink: "https://github.com/technologiestiftung/stakeholder-radar",
