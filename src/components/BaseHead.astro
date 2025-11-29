@@ -22,7 +22,6 @@ const pageTitle = getPageTitle({
 });
 
 const isAboutPage = Astro.url.pathname.includes("/about");
-const isBlogPage = Astro.url.pathname.includes("/blog");
 ---
 
 <!-- Global Metadata -->
@@ -31,8 +30,7 @@ const isBlogPage = Astro.url.pathname.includes("/blog");
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <meta name="generator" content={Astro.generator} />
 
-{!isAboutPage && <link rel="prefetch" href="/about/" />}
-{!isBlogPage && <link rel="prefetch" href="/blog/" />}
+{!isAboutPage && <link rel="prefetch" href="/me.png" />}
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
