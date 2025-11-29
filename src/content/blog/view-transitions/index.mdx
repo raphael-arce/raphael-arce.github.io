@@ -5,22 +5,31 @@ pubDate: "Nov 27 2025"
 heroImage: "/blog-placeholder-4.jpg"
 ---
 
+import ViewTransitions from "./raw/view-transitions.astro";
+import ViewTransitionsMotionSafe from "./raw/view-transitions-motion-safe.astro";
+
 I just learned that you can activate [view transitions](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API) in multi-page applications using only this in your stylesheet:
 
-```
-@view-transition {
-  navigation: auto;
-}
-```
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">View Transitions</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <ViewTransitions />
+  </div>
+</details>
 
 And if you want to make sure that your view transitions are accessible, you can wrap it in a `prefers-reduced-motion` media query:
 
-```
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
-}
-```
+<details
+  open
+  className="group collapse collapse-plus bg-gray-200 hover:bg-gray-300"
+>
+  <summary className="collapse-title font-medium">Reduced Motion</summary>
+  <div className="collapse-content mx-auto w-72 2xs:w-[20rem] xs:w-auto">
+    <ViewTransitionsMotionSafe />
+  </div>
+</details>
 
 Note: it is [not supported by firefox yet](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API#css.at-rules.view-transition), but it works in chromium- and webkit-based browsers.
