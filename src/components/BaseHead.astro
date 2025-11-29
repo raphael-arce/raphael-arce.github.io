@@ -20,6 +20,9 @@ const pageTitle = getPageTitle({
   title,
   domain: SITE_DOMAIN,
 });
+
+const isAboutPage = Astro.url.pathname.includes("/about");
+const isBlogPage = Astro.url.pathname.includes("/blog");
 ---
 
 <!-- Global Metadata -->
@@ -27,6 +30,9 @@ const pageTitle = getPageTitle({
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <meta name="generator" content={Astro.generator} />
+
+{!isAboutPage && <link rel="prefetch" href="/about" />}
+{!isBlogPage && <link rel="prefetch" href="/blog" />}
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
