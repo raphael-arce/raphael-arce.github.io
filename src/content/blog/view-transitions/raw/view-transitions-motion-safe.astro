@@ -3,8 +3,10 @@ import { Code } from "astro:components";
 ---
 
 <Code
-  code={`@view-transition {
-  navigation: auto;
+  code={`@media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+      navigation: auto;
+    }
 }`}
   lang="css"
   wrap
