@@ -4,9 +4,11 @@ import sitemap from '@astrojs/sitemap';
 import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
 import robotsTxt from "astro-robots-txt";
+import cloudflare from '@astrojs/cloudflare';
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://raphael.arce.de',
-  integrations: [mdx(), sitemap(), tailwind(), react(), robotsTxt()]
+  integrations: [mdx(), sitemap(), tailwind(), react(), robotsTxt()],
+  adapter: cloudflare(),
 });
